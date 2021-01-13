@@ -40,12 +40,20 @@ const transformFuc = (item: any) => {
   return container//append into a array as output
 }
 
-/*
-*Param1: Rest API link;
-*Param2:
-*/
+
+
 function App() {
   const url = 'https://demo6922545.mockable.io/'
+
+  /***
+ *Param1: Rest API link;
+ *Param2: fuction: mutation  data
+ *Param3: fucion: get overall top score data
+ ** Output:
+ * 1 new gene data and graph data pass to child
+ * 2 network error message
+ * 3 loading status
+ */
   const { geneData, responseError, isLoading } = useFetch(url, transformFuc, getTopItemsByValue)
 
   if (isLoading) {

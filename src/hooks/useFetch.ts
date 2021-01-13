@@ -13,7 +13,6 @@ interface newItemType {
     'graphData'?: graphDataType[];
 }
 
-//transformedGenes: any[], numOfTop: number
 const useFetch = (url: string, transformFuc: (item: any) => newItemType, getTop: (transformedGenes: any[], numOfTop: number) => any[] | undefined) => {
     const [responseError, setResponseError] = useState(null)
     const [geneData, setGeneData] = useState<any[] | undefined>();
@@ -31,19 +30,15 @@ const useFetch = (url: string, transformFuc: (item: any) => newItemType, getTop:
                     data['data'].map((item: any) => {
                         return transformedGenes.push(transformFuc(item))//append into a array as output
                     })
-                    console.log('inhook', transformedGenes)
-
                     setGeneData(getTop(transformedGenes, 5))//sort out and collect top 5
                     setIsLoading(false)
                 })
                 .catch(e => {
-                    console.log(e)
                     setResponseError(e)
                 });
         };
-
         fetchUsersWithAxios();
-    }, []);
+    }, [url, transformFuc, getTop]);
 
 
 
