@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "./App.css";
-import axios from "axios";
 // Import React Table
 import ReactTable from "react-table";
 import "react-table/react-table.css";
@@ -9,47 +8,54 @@ import "react-table/react-table.css";
 import BarChartByRechart from "./graphChart/BarChartByRechart"
 import RadarChartRechart from "./graphChart/RadarChartRechart"
 
+import useFetch from "./hooks/useFetch";
 import { getTopItemsByValue } from './utils/utils'
 
 
-const fetchUsersWithAxios = async () => {
-  const apiUrl = 'https://demo6922545.mockable.io/';
-  let transformedGenes = []
-  return axios
-    .get(apiUrl)
-    .then(({ data }) => {
-      data['data'].map((item) => {
-        const container = {}; //extract relative elements to form a new object
-        container['symbol'] = item['target']['gene_info']['symbol']
-        container['id'] = item['target']['id']
-        container['name'] = item['target']['gene_info']['name']
-        container['overall_association_score'] = item['association_score']['overall']
-        const graphDataObj = item['association_score']['datatypes']
-        container['graphData'] = Object.keys(graphDataObj).map(k => {
-          let itemObj = {};
-          itemObj['name'] = k
-          itemObj['value'] = graphDataObj[k]
-          return itemObj
-        })
-        return transformedGenes.push(container)//append into a array as output
-      })
-      return (getTopItemsByValue(transformedGenes, 5))//sort out and collect top 5
-    })
-    .catch(e => {
-      console.log(e);
-    });
-};
+interface graphDataType {
+  'name'?: string;
+  'value'?: string;
+}
+interface newItemType {
+  'symbol'?: string;
+  'geneId'?: string;
+  'name'?: string;
+  'overall_association_score'?: string;
+  'graphData'?: graphDataType[];
+}
+const transformFuc = (item: any) => {
+  //extract relative elements to form a new object
+  const container: newItemType = {}
+  container['symbol'] = item['target']['gene_info']['symbol']
+  container['geneId'] = item['target']['id']
+  container['name'] = item['target']['gene_info']['name']
+  container['overall_association_score'] = item['association_score']['overall']
+  const graphDataObj = item['association_score']['datatypes']
+  container['graphData'] = Object.keys(graphDataObj).map(k => {
+    let itemObj: graphDataType = {};
+    itemObj['name'] = k
+    itemObj['value'] = graphDataObj[k]
+    return itemObj
+  })
+  return container//append into a array as output
+}
 
+/*
+*Param1: Rest API link;
+*Param2:
+*/
 function App() {
-  const [geneData, setGeneData] = useState([]);
-  useEffect(() => {
-    fetchUsersWithAxios().then(data => {
-      setGeneData(data)
-    })
-  }, []);
+  const url = 'https://demo6922545.mockable.io/'
+  const { geneData, responseError, isLoading } = useFetch(url, transformFuc, getTopItemsByValue)
+
+  if (isLoading) {
+    return <p>loading </p>
+  }
+  if (responseError) {
+    return <p>Network Error, try later </p>
+  }
 
   return (
-
     <div className="App">
       <ReactTable
         data={geneData}
@@ -82,7 +88,7 @@ function App() {
           },
           {
             Header: "Gene ID",
-            accessor: "id",
+            accessor: "geneId",
           },
           {
             Header: "Gene Name",
